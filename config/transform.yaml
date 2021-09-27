@@ -1,0 +1,23 @@
+train:
+  Resize:
+    - 224
+    - 224
+  ToTensor:
+
+val:
+  Resize:
+    - 224
+    - 224
+  ToTensor:
+
+test:
+  Resize:
+    - 224
+    - 224
+  ToTensor:
+
+predict:
+  Resize:
+    - 224
+    - 224
+  ToTensor:
