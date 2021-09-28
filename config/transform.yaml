@@ -1,23 +1,23 @@
 train:
   Resize:
-    - 224
-    - 224
+    - 256
+    - 256
   ToTensor:
 
 val:
   Resize:
-    - 224
-    - 224
+    - 256
+    - 256
   ToTensor:
 
 test:
   Resize:
-    - 224
-    - 224
+    - 256
+    - 256
   ToTensor:
 
 predict:
   Resize:
-    - 224
-    - 224
+    - 256
+    - 256
   ToTensor:

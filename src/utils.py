@@ -2,6 +2,7 @@
 from ruamel.yaml import safe_load
 from torchvision import transforms
 from os.path import isfile
+import torch
 
 # def
 
@@ -46,3 +47,11 @@ def get_transform_from_file(filepath):
     else:
         assert False, 'please check the transform config path: {}'.format(
             filepath)
+
+
+def load_checkpoint(model, use_cuda, checkpoint_path):
+    map_location = torch.device(
+        device='cuda') if use_cuda else torch.device(device='cpu')
+    checkpoint = torch.load(f=checkpoint_path, map_location=map_location)
+    model.load_state_dict(checkpoint['state_dict'])
+    return model
