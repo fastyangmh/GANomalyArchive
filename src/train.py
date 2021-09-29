@@ -31,7 +31,6 @@ def _get_trainer(project_parameters):
 def train(project_parameters):
     seed_everything(seed=project_parameters.random_seed)
     data_module = DataModule(project_parameters=project_parameters)
-    project_parameters.image_size = data_module.transform_dict['train'].transforms[0].size[0]
     model = create_model(project_parameters=project_parameters)
     trainer = _get_trainer(project_parameters=project_parameters)
     trainer.fit(model=model, datamodule=data_module)

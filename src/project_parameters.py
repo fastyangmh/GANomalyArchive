@@ -45,6 +45,8 @@ class ProjectParameters:
             '--max_files', type=self._str_to_int, default=None, help='the maximum number of files for loading files.')
         self._parser.add_argument('--in_chans', type=int, default=3,
                                   help='number of input channels / colors (default: 3).')
+        self._parser.add_argument('--image_size', type=int, default=256, required=True,
+                                  help='the input image size. if you have set resize transform, please set the image size to the same value as resize in transform.yaml. note that the input image must be equal in height and width.')
 
         # model
         self._parser.add_argument('--checkpoint_path', type=str, default=None,
@@ -87,6 +89,12 @@ class ProjectParameters:
             'simple', 'advanced'], help='to profile individual steps during training and assist in identifying bottlenecks.')
         self._parser.add_argument('--weights_summary', type=str, default=None, choices=[
                                   'top', 'full'], help='prints a summary of the weights when training begins.')
+
+        # predict
+        self._parser.add_argument('--gui', action='store_true', default=False,
+                                  help='whether to use the gui window while predicting.')
+        self._parser.add_argument(
+            '--threshold', type=float, default=0.2, help='the anomaly score threshold.')
 
     def _str_to_str(self, s):
         return None if s == 'None' or s == 'none' else s
@@ -137,6 +145,9 @@ class ProjectParameters:
         if project_parameters.use_early_stopping:
             # the PyTorch lightning needs to get validation loss in every training epoch.
             project_parameters.val_iter = 1
+
+        # predict
+        project_parameters.use_gui = project_parameters.gui
 
         return project_parameters
 

@@ -320,7 +320,6 @@ class Net(LightningModule):
 if __name__ == '__main__':
     # project parameters
     project_parameters = ProjectParameters().parse()
-    project_parameters.image_size = 256
 
     # create model
     model = create_model(project_parameters=project_parameters)
