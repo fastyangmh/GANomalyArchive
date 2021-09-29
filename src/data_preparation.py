@@ -35,8 +35,9 @@ class MNIST(MNIST):
         self.__get_normal_data_and_label__()
 
     def __get_normal_data_and_label__(self):
-        self.data = self.data[self.targets == 0]
-        self.targets = self.targets[self.targets == 0]
+        # let 0 as anomalous image and 1~9 as normal image
+        self.data = self.data[self.targets != 0]
+        self.targets = self.targets[self.targets != 0]
 
     def __getitem__(self, index: int):
         data, _ = super().__getitem__(index)
