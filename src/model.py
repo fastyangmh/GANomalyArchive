@@ -180,7 +180,7 @@ class Net(LightningModule):
 
     def forward(self, x):
         _, latent1, latent2 = self.generator(x)
-        return torch.mean(nn.functional.mse_loss(latent2, latent1, reduction='none'), 1).view(-1)
+        return torch.mean(nn.functional.l1_loss(latent2, latent1, reduction='none'), 1).view(-1)
 
     def get_progress_bar_dict(self):
         # don't show the loss value
@@ -288,13 +288,13 @@ class Net(LightningModule):
         fake_loss = self.bce_loss(
             prob_xhat, torch.zeros_like(input=prob_xhat))
         d_loss = (real_loss+fake_loss)*0.5
-        return {'generator_loss': g_loss, 'discriminator_loss': d_loss, 'threshold': self.forward(x).tolist()}
+        return {'generator_loss': g_loss, 'discriminator_loss': d_loss, 'anomaly score': self.forward(x).tolist()}
 
     def test_epoch_end(self, outputs):
-        threshold = sum([v['threshold'] for v in outputs], [])
-        print('the mean of threshold: {}'.format(np.mean(threshold)))
-        print('threshold range: {} ~ {}'.format(
-            min(threshold), max(threshold)))
+        anomaly_score = sum([v['anomaly score'] for v in outputs], [])
+        print('the mean of anomaly score: {}'.format(np.mean(anomaly_score)))
+        print('anomaly score range: {} ~ {}'.format(
+            min(anomaly_score), max(anomaly_score)))
         epoch_generator_loss, epoch_discriminator_loss = self._parse_outputs(
             outputs=outputs)
         self.log('test generator loss', np.mean(
