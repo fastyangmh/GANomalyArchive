@@ -66,7 +66,8 @@ def _weights_init(module):
 class Encoder(nn.Module):
     def __init__(self, image_size, in_chans, features, latent_size, add_final_conv):
         super().__init__()
-        assert image_size % 16 == 0, "isize has to be a multiple of 16"
+        assert 2**int(np.log2(image_size)
+                      ) == image_size, 'the image size has to be an exponent of 2.'
         layers = []
         layers.append(nn.Conv2d(in_channels=in_chans, out_channels=features,
                                 kernel_size=4, stride=2, padding=1, bias=False))
@@ -93,7 +94,8 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, image_size, in_chans, features, latent_size):
         super().__init__()
-        assert image_size % 16 == 0, "isize has to be a multiple of 16"
+        assert 2**int(np.log2(image_size)
+                      ) == image_size, 'the image size has to be an exponent of 2.'
         features = features//2
         target_image_size = 4
         while target_image_size != image_size:
@@ -178,7 +180,7 @@ class Net(LightningModule):
 
     def forward(self, x):
         _, latent1, latent2 = self.generator(x)
-        return torch.cosine_similarity(latent1, latent2).view(-1)
+        return torch.mean(nn.functional.mse_loss(latent2, latent1, reduction='none'), 1).view(-1)
 
     def get_progress_bar_dict(self):
         # don't show the loss value
@@ -201,9 +203,9 @@ class Net(LightningModule):
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
         self.logger.experiment.add_image(
-            'x', torchvision.utils.make_grid(x), self.current_epoch)
+            'training real image', torchvision.utils.make_grid(x), self.current_epoch)
         self.logger.experiment.add_image(
-            'xhat', torchvision.utils.make_grid(xhat), self.current_epoch)
+            'training fake image', torchvision.utils.make_grid(xhat), self.current_epoch)
         if optimizer_idx == 0:  # generator
             adv_loss = self.l2_loss(feat_xhat, feat_x) * \
                 self.project_parameters.adversarial_weight
@@ -235,6 +237,10 @@ class Net(LightningModule):
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
+        self.logger.experiment.add_image(
+            'validation real image', torchvision.utils.make_grid(x), self.current_epoch)
+        self.logger.experiment.add_image(
+            'validation fake image', torchvision.utils.make_grid(xhat), self.current_epoch)
         # generator
         adv_loss = self.l2_loss(feat_xhat, feat_x) * \
             self.project_parameters.adversarial_weight
@@ -265,6 +271,10 @@ class Net(LightningModule):
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
+        self.logger.experiment.add_image(
+            'test real image', torchvision.utils.make_grid(x), self.current_epoch)
+        self.logger.experiment.add_image(
+            'test fake image', torchvision.utils.make_grid(xhat), self.current_epoch)
         # generator
         adv_loss = self.l2_loss(feat_xhat, feat_x) * \
             self.project_parameters.adversarial_weight
@@ -278,9 +288,13 @@ class Net(LightningModule):
         fake_loss = self.bce_loss(
             prob_xhat, torch.zeros_like(input=prob_xhat))
         d_loss = (real_loss+fake_loss)*0.5
-        return {'generator_loss': g_loss, 'discriminator_loss': d_loss}
+        return {'generator_loss': g_loss, 'discriminator_loss': d_loss, 'threshold': self.forward(x).tolist()}
 
     def test_epoch_end(self, outputs):
+        threshold = sum([v['threshold'] for v in outputs], [])
+        print('the mean of threshold: {}'.format(np.mean(threshold)))
+        print('threshold range: {} ~ {}'.format(
+            min(threshold), max(threshold)))
         epoch_generator_loss, epoch_discriminator_loss = self._parse_outputs(
             outputs=outputs)
         self.log('test generator loss', np.mean(
