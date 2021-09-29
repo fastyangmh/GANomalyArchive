@@ -3,6 +3,7 @@ import argparse
 from os.path import abspath, join
 import torch
 from src.utils import load_yaml
+from datetime import datetime
 
 # class
 
@@ -96,6 +97,10 @@ class ProjectParameters:
         self._parser.add_argument(
             '--threshold', type=float, default=0.2, help='the anomaly score threshold.')
 
+        # evaluate
+        self._parser.add_argument(
+            '--n_splits', type=int, default=5, help='number of folds. must be at least 2.')
+
     def _str_to_str(self, s):
         return None if s == 'None' or s == 'none' else s
 
@@ -148,6 +153,11 @@ class ProjectParameters:
 
         # predict
         project_parameters.use_gui = project_parameters.gui
+
+        # evaluate
+        if project_parameters.mode == 'evaluate':
+            project_parameters.k_fold_data_path = './k_fold_dataset{}'.format(
+                datetime.now().strftime('%Y%m%d%H%M%S'))
 
         return project_parameters
 
