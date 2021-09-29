@@ -3,6 +3,8 @@ from ruamel.yaml import safe_load
 from torchvision import transforms
 from os.path import isfile
 import torch
+from glob import glob
+from os.path import join
 
 # def
 
@@ -55,3 +57,12 @@ def load_checkpoint(model, use_cuda, checkpoint_path):
     checkpoint = torch.load(f=checkpoint_path, map_location=map_location)
     model.load_state_dict(checkpoint['state_dict'])
     return model
+
+
+def get_files(filepath, file_type):
+    files = []
+    if type(file_type) != list:
+        file_type = [file_type]
+    for v in file_type:
+        files += sorted(glob(join(filepath, '*.{}'.format(v))))
+    return files
