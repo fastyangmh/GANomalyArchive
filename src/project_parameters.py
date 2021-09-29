@@ -38,8 +38,6 @@ class ProjectParameters:
                                   help='the validation data size used for the predefined dataset.')
         self._parser.add_argument('--num_workers', type=int, default=torch.get_num_threads(
         ), help='how many subprocesses to use for data loading.')
-        self._parser.add_argument(
-            '--no_balance', action='store_true', default=False, help='whether to balance the data.')
         self._parser.add_argument('--transform_config_path', type=self._str_to_str,
                                   default='config/transform.yaml', help='the transform config path.')
         self._parser.add_argument(
@@ -146,7 +144,6 @@ class ProjectParameters:
         project_parameters.gpus = project_parameters.gpus if project_parameters.use_cuda else 0
 
         # data preparation
-        project_parameters.use_balance = not project_parameters.no_balance and project_parameters.predefined_dataset is None
         if project_parameters.transform_config_path is not None:
             project_parameters.transform_config_path = abspath(
                 project_parameters.transform_config_path)
