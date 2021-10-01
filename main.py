@@ -3,6 +3,8 @@ from src.project_parameters import ProjectParameters
 from src.train import train
 from src.predict import Predict
 from src.gui import GUI
+from src.evaluate import evaluate
+from src.tune import tune
 
 # def
 
@@ -19,7 +21,13 @@ def main(project_parameters):
             result = Predict(project_parameters=project_parameters)(
                 data_path=project_parameters.data_path)
             print(result)
-
+    elif project_parameters.mode == 'evaluate':
+        if project_parameters.predefined_dataset is not None:
+            print('temporarily does not support predefined dataset.')
+        else:
+            evaluate(project_parameters=project_parameters)
+    elif project_parameters.mode == 'tune':
+        result = tune(project_parameters=project_parameters)
     return result
 
 
