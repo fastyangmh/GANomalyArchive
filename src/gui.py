@@ -56,7 +56,7 @@ class GUI:
 
     def _recognize(self):
         if self.data_path is not None:
-            abnormal_score = self.predict_object(data_path=self.data_path)
+            abnormal_score = self.predict_object(data_path=self.data_path)[-1]
             self.abnormal_score_label.config(
                 text='abnormal score: {}'.format(abnormal_score))
             result = 'normal' if abnormal_score < self.project_parameters.threshold else 'abnormal'
