@@ -36,7 +36,7 @@ class Predict:
             data_loader = DataLoader(dataset=dataset, batch_size=self.project_parameters.batch_size,
                                      pin_memory=self.project_parameters.use_cuda, num_workers=self.project_parameters.num_workers)
             with torch.no_grad():
-                for image in data_loader:
+                for image, _ in data_loader:
                     if self.project_parameters.use_cuda:
                         image = image.cuda()
                     result.append(self.model(image).tolist())

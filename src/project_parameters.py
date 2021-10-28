@@ -144,6 +144,10 @@ class ProjectParameters:
         project_parameters.gpus = project_parameters.gpus if project_parameters.use_cuda else 0
 
         # data preparation
+        project_parameters.classes = sorted(['abnormal', 'normal'])
+        project_parameters.class_to_idx = {
+            c: idx for idx, c in enumerate(project_parameters.classes)}
+        project_parameters.num_classes = len(project_parameters.classes)
         if project_parameters.transform_config_path is not None:
             project_parameters.transform_config_path = abspath(
                 project_parameters.transform_config_path)

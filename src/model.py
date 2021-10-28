@@ -198,7 +198,7 @@ class Net(LightningModule):
         return epoch_generator_loss, epoch_discriminator_loss
 
     def training_step(self, batch, batch_idx, optimizer_idx):
-        x = batch
+        x, _ = batch
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
@@ -233,7 +233,7 @@ class Net(LightningModule):
             epoch_discriminator_loss), on_epoch=True, prog_bar=True)
 
     def validation_step(self, batch, batch_idx):
-        x = batch
+        x, _ = batch
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
@@ -267,7 +267,7 @@ class Net(LightningModule):
             epoch_discriminator_loss), on_epoch=True, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
-        x = batch
+        x, _ = batch
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())

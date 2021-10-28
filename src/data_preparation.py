@@ -20,28 +20,29 @@ class ImageFolder(ImageFolder):
         self.in_chans = in_chans
 
     def __getitem__(self, index: int):
-        path, _ = self.samples[index]
+        path, label = self.samples[index]
         data = self.loader(path)
         assert self.in_chans == len(
             data.getbands()), 'please check the channels of image.'
         if self.transform is not None:
             data = self.transform(data)
-        return data
+        return data, label
 
 
 class MNIST(MNIST):
-    def __init__(self, root: str, train: bool, transform: Optional[Callable], download: bool):
+    def __init__(self, root: str, train: bool, transform: Optional[Callable], download: bool, project_parameters):
         super().__init__(root, train=train, transform=transform, download=download)
-        self.__get_normal_data_and_label__()
-
-    def __get_normal_data_and_label__(self):
-        # let 0 as anomalous image and 1~9 as normal image
-        self.data = self.data[self.targets != 0]
-        self.targets = self.targets[self.targets != 0]
+        self.normal_class = 0  # let 0 as normal image and rest all as abnormal
+        if train:
+            self.data = self.data[self.targets == self.normal_class]
+            self.targets = self.targets[self.targets == self.normal_class]
+        self.project_parameters = project_parameters
 
     def __getitem__(self, index: int):
-        data, _ = super().__getitem__(index)
-        return data
+        data, label = super().__getitem__(index)
+        # convert label, note that abnormal is 0, normal is 1
+        label = 1 if label == self.normal_class else 0
+        return data, label
 
 
 class DataModule(LightningDataModule):
@@ -63,10 +64,16 @@ class DataModule(LightningDataModule):
                         self.dataset[stage])-self.project_parameters.max_files)
                     self.dataset[stage] = random_split(
                         dataset=self.dataset[stage], lengths=lengths)[0]
+            if self.project_parameters.max_files is not None:
+                assert self.dataset['val'].dataset.class_to_idx == self.project_parameters.class_to_idx, 'the classes is not the same. please check the classes of data. from ImageFolder: {} from argparse: {}'.format(
+                    self.dataset['val'].dataset.class_to_idx, self.project_parameters.class_to_idx)
+            else:
+                assert self.dataset['val'].class_to_idx == self.project_parameters.class_to_idx, 'the classes is not the same. please check the classes of data. from ImageFolder: {} from argparse: {}'.format(
+                    self.dataset['val'].class_to_idx, self.project_parameters.class_to_idx)
         else:
-            train_set = eval('{}(root=self.project_parameters.data_path, train=True, download=True, transform=self.transform_dict["train"])'.format(
+            train_set = eval('{}(root=self.project_parameters.data_path, train=True, download=True, transform=self.transform_dict["train"], project_parameters=self.project_parameters)'.format(
                 self.project_parameters.predefined_dataset))
-            test_set = eval('{}(root=self.project_parameters.data_path, train=False, download=True, transform=self.transform_dict["test"])'.format(
+            test_set = eval('{}(root=self.project_parameters.data_path, train=False, download=True, transform=self.transform_dict["test"], project_parameters=self.project_parameters)'.format(
                 self.project_parameters.predefined_dataset))
             # modify the maximum number of files
             if self.project_parameters.max_files is not None:

@@ -4,6 +4,11 @@ from src.data_preparation import DataModule
 from src.project_parameters import ProjectParameters
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint, EarlyStopping
+import torch
+import numpy as np
+from collections import defaultdict
+import seaborn as sns
+import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -41,6 +46,30 @@ def train(project_parameters):
         print('\ntest the {} dataset'.format(stage))
         result[stage] = trainer.test(test_dataloaders=data_loader)
     trainer.callback_connector.configure_progress_bar().enable()
+
+    # plot abnormal and normal distribution
+    result['scores'] = {}
+    model.eval()
+    for stage in ['val', 'test']:
+        scores = defaultdict(list)
+        with torch.no_grad():
+            for image, label in data_module.get_data_loaders()[stage]:
+                if project_parameters.use_cuda:
+                    image = image.cuda()
+                s = model(image).numpy()
+                # note that, normal is 1, abnormal is 0
+                scores[project_parameters.classes[0]].append(s[label == 0])
+                scores[project_parameters.classes[1]].append(s[label == 1])
+        for k, v in scores.items():
+            v = np.concatenate(v)
+            scores[k] = v
+            sns.distplot(v, label=k)
+        plt.title(stage)
+        plt.legend()
+        plt.savefig('{}_{}.png'.format(
+            project_parameters.data_path.split('/')[-1], stage))
+        plt.close()
+        result['scores'][stage] = scores
     return result
 
 
