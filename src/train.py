@@ -49,14 +49,16 @@ def train(project_parameters):
 
     # plot abnormal and normal distribution
     result['scores'] = {}
-    model.eval()
+    model = model.eval()
+    if project_parameters.use_cuda:
+        model = model.cuda()
     for stage in ['val', 'test']:
         scores = defaultdict(list)
         with torch.no_grad():
             for image, label in data_module.get_data_loaders()[stage]:
                 if project_parameters.use_cuda:
                     image = image.cuda()
-                s = model(image).numpy()
+                s = model(image).cpu().data.numpy()
                 # note that, normal is 1, abnormal is 0
                 scores[project_parameters.classes[0]].append(s[label == 0])
                 scores[project_parameters.classes[1]].append(s[label == 1])
