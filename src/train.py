@@ -18,9 +18,6 @@ warnings.filterwarnings("ignore")
 def _get_trainer(project_parameters):
     callbacks = [ModelCheckpoint(monitor='validation generator loss', mode='min'),
                  LearningRateMonitor(logging_interval='epoch', log_momentum=True)]
-    if project_parameters.use_early_stopping:
-        callbacks.append(EarlyStopping(monitor='validation generator loss',
-                                       patience=project_parameters.patience, mode='min'))
     return Trainer(callbacks=callbacks,
                    gpus=project_parameters.gpus,
                    max_epochs=project_parameters.train_iter,

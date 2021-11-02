@@ -78,10 +78,6 @@ class ProjectParameters:
             '--step_size', type=int, default=10, help='period of learning rate decay.')
         self._parser.add_argument('--gamma', type=int, default=0.1,
                                   help='multiplicative factor of learning rate decay.')
-        self._parser.add_argument('--no_early_stopping', action='store_true',
-                                  default=False, help='whether to use early stopping while training.')
-        self._parser.add_argument('--patience', type=int, default=3,
-                                  help='number of checks with no improvement after which training will be stopped.')
         self._parser.add_argument('--precision', type=int, default=32, choices=[
                                   16, 32], help='full precision (32) or half precision (16). Can be used on CPU, GPU or TPUs.')
         self._parser.add_argument('--profiler', type=str, default=None, choices=[
@@ -159,11 +155,7 @@ class ProjectParameters:
         # train
         if project_parameters.val_iter is None:
             project_parameters.val_iter = project_parameters.train_iter
-        project_parameters.use_early_stopping = not project_parameters.no_early_stopping
-        if project_parameters.use_early_stopping:
-            # the PyTorch lightning needs to get validation loss in every training epoch.
-            project_parameters.val_iter = 1
-
+        
         # predict
         project_parameters.use_gui = project_parameters.gui
 
