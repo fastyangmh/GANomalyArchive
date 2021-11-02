@@ -20,6 +20,9 @@ def main(project_parameters):
         else:
             result = Predict(project_parameters=project_parameters)(
                 data_path=project_parameters.data_path)
+            # use [:-1] to remove the latest comma
+            print(('{},'*project_parameters.num_classes).format(*
+                                                                project_parameters.classes)[:-1])
             print(result)
     elif project_parameters.mode == 'evaluate':
         if project_parameters.predefined_dataset is not None:

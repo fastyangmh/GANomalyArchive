@@ -40,7 +40,7 @@ class Predict:
                     if self.project_parameters.use_cuda:
                         image = image.cuda()
                     result.append(self.model(image).tolist())
-        return np.concatenate(result, 0).round(6)
+        return np.concatenate(result, 0).reshape(-1, 1)
 
 
 if __name__ == '__main__':
@@ -50,4 +50,7 @@ if __name__ == '__main__':
     # predict the data path
     result = Predict(project_parameters=project_parameters)(
         data_path=project_parameters.data_path)
+    # use [:-1] to remove the latest comma
+    print(('{},'*project_parameters.num_classes).format(*
+                                                        project_parameters.classes)[:-1])
     print(result)
