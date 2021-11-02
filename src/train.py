@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore")
 
 
 def _get_trainer(project_parameters):
-    callbacks = [ModelCheckpoint(monitor='validation generator loss', mode='min'),
+    callbacks = [ModelCheckpoint(monitor='training generator loss', mode='min'),
                  LearningRateMonitor(logging_interval='epoch', log_momentum=True)]
     return Trainer(callbacks=callbacks,
                    gpus=project_parameters.gpus,
