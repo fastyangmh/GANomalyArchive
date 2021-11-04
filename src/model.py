@@ -204,10 +204,6 @@ class Net(LightningModule):
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
-        self.logger.experiment.add_image(
-            'training real image', torchvision.utils.make_grid(x), self.current_epoch)
-        self.logger.experiment.add_image(
-            'training fake image', torchvision.utils.make_grid(xhat), self.current_epoch)
         if optimizer_idx == 0:  # generator
             adv_loss = self.l2_loss(feat_xhat, feat_x) * \
                 self.project_parameters.adversarial_weight
@@ -239,10 +235,6 @@ class Net(LightningModule):
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
-        self.logger.experiment.add_image(
-            'validation real image', torchvision.utils.make_grid(x), self.current_epoch)
-        self.logger.experiment.add_image(
-            'validation fake image', torchvision.utils.make_grid(xhat), self.current_epoch)
         # generator
         adv_loss = self.l2_loss(feat_xhat, feat_x) * \
             self.project_parameters.adversarial_weight
@@ -273,10 +265,6 @@ class Net(LightningModule):
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
-        self.logger.experiment.add_image(
-            'test real image', torchvision.utils.make_grid(x), self.current_epoch)
-        self.logger.experiment.add_image(
-            'test fake image', torchvision.utils.make_grid(xhat), self.current_epoch)
         # generator
         adv_loss = self.l2_loss(feat_xhat, feat_x) * \
             self.project_parameters.adversarial_weight
