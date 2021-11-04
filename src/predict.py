@@ -22,6 +22,7 @@ class Predict:
 
     def __call__(self, data_path):
         result = []
+        fake_image = []
         if '.png' in data_path or '.jpg' in data_path:
             color_mode = 'RGB' if self.project_parameters.in_chans == 3 else 'L'
             image = Image.open(fp=data_path).convert(color_mode)
@@ -29,7 +30,9 @@ class Predict:
             if self.project_parameters.use_cuda:
                 image = image.cuda()
             with torch.no_grad():
-                result.append(self.model(image).tolist())
+                loss, xhat = self.model(image)
+                result.append(loss.tolist())
+                fake_image.append(xhat.cpu().data.numpy())
         else:
             dataset = ImageFolder(
                 root=data_path, transform=self.transform, in_chans=self.project_parameters.in_chans)
@@ -39,8 +42,10 @@ class Predict:
                 for image, _ in data_loader:
                     if self.project_parameters.use_cuda:
                         image = image.cuda()
-                    result.append(self.model(image).tolist())
-        return np.concatenate(result, 0).reshape(-1, 1)
+                    loss, xhat = self.model(image)
+                    result.append(loss.tolist())
+                    fake_image.append(xhat.cpu().data.numpy())
+        return np.concatenate(result, 0).reshape(-1, 1), np.concatenate(fake_image, 0)
 
 
 if __name__ == '__main__':
@@ -48,7 +53,7 @@ if __name__ == '__main__':
     project_parameters = ProjectParameters().parse()
 
     # predict the data path
-    result = Predict(project_parameters=project_parameters)(
+    result, fake_image = Predict(project_parameters=project_parameters)(
         data_path=project_parameters.data_path)
     # use [:-1] to remove the latest comma
     print(('{},'*project_parameters.num_classes).format(*
