@@ -67,7 +67,7 @@ class ProjectParameters:
 
         # train
         self._parser.add_argument('--val_iter', type=self._str_to_int,
-                                  default=None, help='the number of validation iteration.')
+                                  default=1, help='the number of validation iteration.')
         self._parser.add_argument(
             '--lr', type=float, default=1e-3, help='the learning rate.')
         self._parser.add_argument(
