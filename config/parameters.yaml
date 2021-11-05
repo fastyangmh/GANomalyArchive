@@ -13,7 +13,7 @@ transform_config_path: config/transform.yaml
 max_files: null
 
 # train
-val_iter: null
+val_iter: 1
 lr: 1e-3
 train_iter: 100
 lr_scheduler: CosineAnnealingLR

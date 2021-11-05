@@ -43,7 +43,7 @@ def _set_tune_project_parameters(hyperparameter, project_parameters):
             exec('project_parameters.{}="{}"'.format(k, v))
         else:
             exec('project_parameters.{}={}'.format(k, v))
-        if k == 'train_iter':
+        if k == 'train_iter' and project_parameters.val_iter != 1:
             exec('project_parameters.val_iter={}'.format(v))
     return project_parameters
 
