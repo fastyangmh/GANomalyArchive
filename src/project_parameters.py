@@ -66,8 +66,8 @@ class ProjectParameters:
             '--encoder_weight', type=float, default=1, help='encoder loss weight.')
 
         # train
-        self._parser.add_argument('--val_iter', type=self._str_to_int,
-                                  default=1, help='the number of validation iteration.')
+        self._parser.add_argument('--val_iter', type=self._str_to_int, default=1,
+                                  help='the number of validation iteration. if set None, the val_iter will set the same as train_iter.')
         self._parser.add_argument(
             '--lr', type=float, default=1e-3, help='the learning rate.')
         self._parser.add_argument(
@@ -155,7 +155,7 @@ class ProjectParameters:
         # train
         if project_parameters.val_iter is None:
             project_parameters.val_iter = project_parameters.train_iter
-        
+
         # predict
         project_parameters.use_gui = project_parameters.gui
 
