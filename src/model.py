@@ -179,8 +179,10 @@ class Net(LightningModule):
         self.bce_loss = nn.BCELoss()
 
     def forward(self, x):
-        _, latent1, latent2 = self.generator(x)
-        return torch.mean(nn.functional.l1_loss(latent2, latent1, reduction='none'), 1).view(-1)
+        xhat, latent1, latent2 = self.generator(x)
+        loss = torch.mean(nn.functional.l1_loss(
+            latent2, latent1, reduction='none'), 1).view(-1)
+        return loss, xhat
 
     def get_progress_bar_dict(self):
         # don't show the loss value
@@ -202,10 +204,6 @@ class Net(LightningModule):
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
-        self.logger.experiment.add_image(
-            'training real image', torchvision.utils.make_grid(x), self.current_epoch)
-        self.logger.experiment.add_image(
-            'training fake image', torchvision.utils.make_grid(xhat), self.current_epoch)
         if optimizer_idx == 0:  # generator
             adv_loss = self.l2_loss(feat_xhat, feat_x) * \
                 self.project_parameters.adversarial_weight
@@ -237,10 +235,6 @@ class Net(LightningModule):
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
-        self.logger.experiment.add_image(
-            'validation real image', torchvision.utils.make_grid(x), self.current_epoch)
-        self.logger.experiment.add_image(
-            'validation fake image', torchvision.utils.make_grid(xhat), self.current_epoch)
         # generator
         adv_loss = self.l2_loss(feat_xhat, feat_x) * \
             self.project_parameters.adversarial_weight
@@ -271,10 +265,6 @@ class Net(LightningModule):
         xhat, latent1, latent2 = self.generator(x)
         prob_x, feat_x = self.discriminator(x)
         prob_xhat, feat_xhat = self.discriminator(xhat.detach())
-        self.logger.experiment.add_image(
-            'test real image', torchvision.utils.make_grid(x), self.current_epoch)
-        self.logger.experiment.add_image(
-            'test fake image', torchvision.utils.make_grid(xhat), self.current_epoch)
         # generator
         adv_loss = self.l2_loss(feat_xhat, feat_x) * \
             self.project_parameters.adversarial_weight
@@ -288,7 +278,7 @@ class Net(LightningModule):
         fake_loss = self.bce_loss(
             prob_xhat, torch.zeros_like(input=prob_xhat))
         d_loss = (real_loss+fake_loss)*0.5
-        return {'generator_loss': g_loss, 'discriminator_loss': d_loss, 'anomaly score': self.forward(x).tolist()}
+        return {'generator_loss': g_loss, 'discriminator_loss': d_loss, 'anomaly score': self.forward(x)[0].tolist()}
 
     def test_epoch_end(self, outputs):
         anomaly_score = sum([v['anomaly score'] for v in outputs], [])
@@ -332,7 +322,7 @@ if __name__ == '__main__':
                    project_parameters.image_size, project_parameters.image_size)
 
     # get model output
-    y = model(x)
+    y, xhat = model(x)
 
     # display the dimension of input and output
     print(x.shape)

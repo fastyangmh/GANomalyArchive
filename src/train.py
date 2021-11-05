@@ -49,13 +49,14 @@ def train(project_parameters):
     model = model.eval()
     if project_parameters.use_cuda:
         model = model.cuda()
-    for stage in ['val', 'test']:
+    for stage in ['train', 'val', 'test']:
         scores = defaultdict(list)
         with torch.no_grad():
             for image, label in data_module.get_data_loaders()[stage]:
                 if project_parameters.use_cuda:
                     image = image.cuda()
-                s = model(image).cpu().data.numpy()
+                s, _ = model(image)
+                s = s.cpu().data.numpy()
                 # note that, normal is 1, abnormal is 0
                 scores[project_parameters.classes[0]].append(s[label == 0])
                 scores[project_parameters.classes[1]].append(s[label == 1])

@@ -18,7 +18,7 @@ def main(project_parameters):
             gui = GUI(project_parameters=project_parameters)
             gui.run()
         else:
-            result = Predict(project_parameters=project_parameters)(
+            result, _ = Predict(project_parameters=project_parameters)(
                 data_path=project_parameters.data_path)
             # use [:-1] to remove the latest comma
             print(('{},'*project_parameters.num_classes).format(*
