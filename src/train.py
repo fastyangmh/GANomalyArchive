@@ -58,8 +58,8 @@ def train(project_parameters):
                 s, _ = model(image)
                 s = s.cpu().data.numpy()
                 # note that, normal is 1, abnormal is 0
-                scores[project_parameters.classes[0]].append(s[label == 0])
-                scores[project_parameters.classes[1]].append(s[label == 1])
+                scores[project_parameters.classes[0]].append(s[(label == 0).tolist()])
+                scores[project_parameters.classes[1]].append(s[(label == 1).tolist()])
         for k, v in scores.items():
             v = np.concatenate(v)
             scores[k] = v
