@@ -1,0 +1,23 @@
+train:
+  Resize:
+    - 256
+    - 256
+  ToTensor:
+
+val:
+  Resize:
+    - 256
+    - 256
+  ToTensor:
+
+test:
+  Resize:
+    - 256
+    - 256
+  ToTensor:
+
+predict:
+  Resize:
+    - 256
+    - 256
+  ToTensor:
